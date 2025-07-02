@@ -4,6 +4,11 @@
     <title>Проект "Комменты"</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      .warning {
+        background-color: darksalmon;
+      }
+    </style>
   </head>
 
   <body>
@@ -65,7 +70,55 @@
 
   <script>
     "use strict";
-    // Код писать здесь
+    let name = document.querySelector(".add-form-name");
+    let text = document.querySelector(".add-form-text");
+    let button = document.querySelector(".add-form-button");
+    let comments = document.querySelector(".comments");
+
+    button.addEventListener("click", () => {
+      if (name.value !== "" && text.value !== "") {
+        name.classList.remove("warning");
+        text.classList.remove("warning");
+
+        let comment = document.createElement("li");
+        const currentDate = new Date();
+
+        comment.innerHTML = 
+          `<div class="comment-header">
+            <div>${name.value}</div>
+            <div>${currentDate.toLocaleDateString('ru-RU') + " " + currentDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</div>
+          </div>
+          <div class="comment-body">
+            <div class="comment-text">
+              ${text.value}
+            </div>
+          </div>
+          <div class="comment-footer">
+            <div class="likes">
+              <span class="likes-counter">0</span>
+              <button class="like-button"></button>
+            </div>
+          </div>`;
+
+        comment.classList.add("comment");
+        comments.appendChild(comment);
+      }
+      else {
+        if (name.value === "") {
+          name.classList.add("warning");
+        }
+        else {
+          name.classList.remove("warning");
+        }
+        if (text.value === "") {
+          text.classList.add("warning");
+        }
+        else {
+          text.classList.remove("warning");
+        }
+      }
+    });
+    
     console.log("It works!");
   </script>
 </html>
