@@ -14,6 +14,7 @@
   <body>
     <div class="container">
       <ul class="comments">
+        <!--
         <li class="comment">
           <div class="comment-header">
             <div>Глеб Фокин</div>
@@ -48,6 +49,7 @@
             </div>
           </div>
         </li>
+        -->
       </ul>
       <div class="add-form">
         <input
@@ -75,33 +77,40 @@
     let button = document.querySelector(".add-form-button");
     let comments = document.querySelector(".comments");
 
+    const likes = [
+      {name: "Глеб Фокин", date: "12.02.22 12:18", comment: "Это будет первый комментарий на этой странице", counter: 3, active: false},
+      {name: "Варвара Н.", date: "13.02.22 19:22", comment: "Мне нравится как оформлена эта страница! ❤", counter: 75, active: true}
+    ] 
+    
     button.addEventListener("click", () => {
       if (name.value !== "" && text.value !== "") {
         name.classList.remove("warning");
         text.classList.remove("warning");
 
-        let comment = document.createElement("li");
         const currentDate = new Date();
+        // let comment = document.createElement("li");
 
-        comment.innerHTML = 
-          `<div class="comment-header">
-            <div>${name.value}</div>
-            <div>${currentDate.toLocaleDateString('ru-RU') + " " + currentDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              ${text.value}
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">0</span>
-              <button class="like-button"></button>
-            </div>
-          </div>`;
+        // comment.innerHTML = 
+        //   `<div class="comment-header">
+        //     <div>${name.value}</div>
+        //     <div>${currentDate.toLocaleDateString('ru-RU') + " " + currentDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</div>
+        //   </div>
+        //   <div class="comment-body">
+        //     <div class="comment-text">
+        //       ${text.value}
+        //     </div>
+        //   </div>
+        //   <div class="comment-footer">
+        //     <div class="likes">
+        //       <span class="likes-counter">0</span>
+        //       <button class="like-button"></button>
+        //     </div>
+        //   </div>`;
 
-        comment.classList.add("comment");
-        comments.appendChild(comment);
+        // comment.classList.add("comment");
+        // comments.appendChild(comment);
+
+        likes.push({name: name.value, date: currentDate.toLocaleDateString('ru-RU') + " " + currentDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}), comment: text.value, counter: 0, active: false});
       }
       else {
         if (name.value === "") {
@@ -117,8 +126,59 @@
           text.classList.remove("warning");
         }
       }
+
+      renderLikes(likes);
     });
     
+    const initLikes = () => {
+      const comments = document.querySelectorAll(".comment");
+
+      for (const comment of comments) {
+        const button = comment.querySelector(".like-button");
+        const counter = comment.querySelector(".likes-counter");
+        button.addEventListener("click", () => {
+          likes[comment.dataset.index].active ? likes[comment.dataset.index].counter-- : likes[comment.dataset.index].counter++;
+          likes[comment.dataset.index].active = !likes[comment.dataset.index].active;
+          /*
+          if (button.classList.contains("-active-like")) {
+            button.classList.remove("-active-like");
+          }
+          else {
+            button.classList.add("-active-like");
+          }
+          */
+         renderLikes(likes);
+        });
+      }
+    }
+
+    function renderLikes(element) {
+      const container = document.querySelector(".comments");
+      container.innerHTML = likes.map((element, index) => `
+        <li class="comment" data-index="${index}">
+          <div class="comment-header">
+            <div>${element.name}</div>
+            <div>${element.date}</div>
+          </div>
+          <div class="comment-body">
+            <div class="comment-text">
+              ${element.comment}
+            </div>
+          </div>
+          <div class="comment-footer">
+            <div class="likes">
+              <span class="likes-counter">${element.counter}</span>
+              <button class="like-button ${element.active ? "-active-like" : ""}"></button>
+            </div>
+          </div>
+        </li>
+      `).join("");
+
+      initLikes(likes);
+    }
+
+    renderLikes(likes);
+
     console.log("It works!");
   </script>
 </html>
