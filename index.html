@@ -110,7 +110,7 @@
         // comment.classList.add("comment");
         // comments.appendChild(comment);
 
-        likes.push({name: name.value, date: currentDate.toLocaleDateString('ru-RU') + " " + currentDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}), comment: text.value, counter: 0, active: false});
+        likes.push({name: name.value.replaceAll("<", "&lt").replaceAll(">", "&gt"), date: currentDate.toLocaleDateString('ru-RU') + " " + currentDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}), comment: text.value.replaceAll("<", "&lt").replaceAll(">", "&gt"), counter: 0, active: false});
       }
       else {
         if (name.value === "") {
@@ -136,7 +136,15 @@
       for (const comment of comments) {
         const button = comment.querySelector(".like-button");
         const counter = comment.querySelector(".likes-counter");
-        button.addEventListener("click", () => {
+
+        comment.addEventListener("click", () => {
+          name.value = likes[comment.dataset.index].name;
+          text.value = "> " + likes[comment.dataset.index].comment + "\n";
+          renderLikes(likes);
+          })
+
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
           likes[comment.dataset.index].active ? likes[comment.dataset.index].counter-- : likes[comment.dataset.index].counter++;
           likes[comment.dataset.index].active = !likes[comment.dataset.index].active;
           /*
@@ -174,7 +182,7 @@
         </li>
       `).join("");
 
-      initLikes(likes);
+      initLikes();
     }
 
     renderLikes(likes);
