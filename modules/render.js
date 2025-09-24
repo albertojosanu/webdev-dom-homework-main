@@ -1,19 +1,22 @@
 import { likes, updateLikes, tag, updateTag } from "./array.js";
 import { initLikes } from "./events.js";
 
+export const container = document.querySelector(".comments");
+
+const fetchAndRenderLikes = () => {
+    return fetch("https://wedev-api.sky.pro/api/v1/albert/comments", {
+        method: "GET",
+    })
+        .then((response) => response.json())
+        .then((data) => updateLikes(data.comments));
+};
+
 export function renderLikes() {
     if (!tag) {
-        fetch("https://wedev-api.sky.pro/api/v1/albert/comments", {
-            method: "GET",
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                updateLikes(data.comments);
-
-                const container = document.querySelector(".comments");
-                container.innerHTML = likes
-                    .map(
-                        (element, index) => `
+        fetchAndRenderLikes().then(() => {
+            container.innerHTML = likes
+                .map(
+                    (element, index) => `
             <li class="comment" data-index="${index}">
               <div class="comment-header">
                 <div>${element.author.name}</div>
@@ -32,12 +35,11 @@ export function renderLikes() {
               </div>
             </li>
             `,
-                    )
-                    .join("");
-                initLikes();
-            });
+                )
+                .join("");
+            initLikes();
+        });
     } else {
-        const container = document.querySelector(".comments");
         container.innerHTML = likes
             .map(
                 (element, index) => `
