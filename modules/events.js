@@ -1,4 +1,4 @@
-import { likes } from "./array.js";
+import { likes, updateTag } from "./array.js";
 import { format } from "./format.js";
 import { renderLikes } from "./render.js";
 
@@ -10,44 +10,20 @@ export const addEvent = () => {
         name.classList.remove("warning");
         text.classList.remove("warning");
 
-        const currentDate = new Date();
-        // let comment = document.createElement("li");
-
-        // comment.innerHTML =
-        //   `<div class="comment-header">
-        //     <div>${name.value}</div>
-        //     <div>${currentDate.toLocaleDateString('ru-RU') + " " + currentDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</div>
-        //   </div>
-        //   <div class="comment-body">
-        //     <div class="comment-text">
-        //       ${text.value}
-        //     </div>
-        //   </div>
-        //   <div class="comment-footer">
-        //     <div class="likes">
-        //       <span class="likes-counter">0</span>
-        //       <button class="like-button"></button>
-        //     </div>
-        //   </div>`;
-
-        // comment.classList.add("comment");
-        // comments.appendChild(comment);
-
-        likes.push({
-            name: format(name.value),
-            date:
-                currentDate.toLocaleDateString("ru-RU") +
-                " " +
-                currentDate.toLocaleTimeString("ru-RU", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                }),
-            comment: format(text.value),
-            counter: 0,
-            active: false,
-        });
-        name.value = "";
-        text.value = "";
+        fetch("https://wedev-api.sky.pro/api/v1/albert/comments", {
+            method: "POST",
+            body: JSON.stringify({
+                name: format(name.value),
+                text: format(text.value),
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => console.log(data))
+            .then(() => {
+                renderLikes();
+                name.value = "";
+                text.value = "";
+            });
     } else {
         if (name.value === "") {
             name.classList.add("warning");
@@ -60,8 +36,6 @@ export const addEvent = () => {
             text.classList.remove("warning");
         }
     }
-
-    renderLikes(likes);
 };
 
 export const initLikes = () => {
@@ -71,19 +45,20 @@ export const initLikes = () => {
         const button = comment.querySelector(".like-button");
 
         comment.addEventListener("click", () => {
-            name.value = likes[comment.dataset.index].name;
-            text.value = "> " + likes[comment.dataset.index].comment + "\n";
-            renderLikes(likes);
+            name.value = likes[comment.dataset.index].author.name;
+            text.value = "> " + likes[comment.dataset.index].text + "\n";
+            renderLikes();
         });
 
         button.addEventListener("click", (event) => {
+            updateTag(true);
             event.stopPropagation();
-            likes[comment.dataset.index].active
-                ? likes[comment.dataset.index].counter--
-                : likes[comment.dataset.index].counter++;
-            likes[comment.dataset.index].active =
-                !likes[comment.dataset.index].active;
-            renderLikes(likes);
+            likes[comment.dataset.index].isLiked
+                ? likes[comment.dataset.index].likes--
+                : likes[comment.dataset.index].likes++;
+            likes[comment.dataset.index].isLiked =
+                !likes[comment.dataset.index].isLiked;
+            renderLikes();
         });
     }
 };
