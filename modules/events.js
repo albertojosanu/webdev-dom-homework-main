@@ -1,12 +1,28 @@
 import { likes, updateTag } from "./array.js";
 import { format } from "./format.js";
-import { renderLikes } from "./render.js";
+import { container, renderLikes } from "./render.js";
 
 let name = document.querySelector(".add-form-name");
 let text = document.querySelector(".add-form-text");
 
+function delay(interval = 300) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, interval);
+    });
+}
+
 export const addEvent = () => {
     if (name.value !== "" && text.value !== "") {
+        const form = document.querySelector(".add-form");
+        form.style.display = "none";
+
+        let waiting = document.createElement("p");
+        waiting.textContent = "Комментарий добавляется...";
+        waiting.style.textAlign = "center";
+        container.append(waiting);
+
         name.classList.remove("warning");
         text.classList.remove("warning");
 
@@ -21,8 +37,10 @@ export const addEvent = () => {
             .then((data) => console.log(data))
             .then(() => {
                 renderLikes();
+                waiting.remove();
                 name.value = "";
                 text.value = "";
+                form.style.removeProperty("display");
             });
     } else {
         if (name.value === "") {
@@ -51,14 +69,19 @@ export const initLikes = () => {
         });
 
         button.addEventListener("click", (event) => {
-            updateTag(true);
             event.stopPropagation();
-            likes[comment.dataset.index].isLiked
-                ? likes[comment.dataset.index].likes--
-                : likes[comment.dataset.index].likes++;
-            likes[comment.dataset.index].isLiked =
-                !likes[comment.dataset.index].isLiked;
-            renderLikes();
+            updateTag(true);
+            button.classList.add("-loading-like");
+
+            delay(2000).then(() => {
+                likes[comment.dataset.index].isLiked
+                    ? likes[comment.dataset.index].likes--
+                    : likes[comment.dataset.index].likes++;
+                likes[comment.dataset.index].isLiked =
+                    !likes[comment.dataset.index].isLiked;
+
+                renderLikes();
+            });
         });
     }
 };
