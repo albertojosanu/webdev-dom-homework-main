@@ -5,6 +5,8 @@ import { container, renderLikes } from "./render.js";
 let name = document.querySelector(".add-form-name");
 let text = document.querySelector(".add-form-text");
 
+let status = 0;
+
 function delay(interval = 300) {
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -26,22 +28,51 @@ export const addEvent = () => {
         name.classList.remove("warning");
         text.classList.remove("warning");
 
-        fetch("https://wedev-api.sky.pro/api/v1/albert/comments", {
-            method: "POST",
-            body: JSON.stringify({
-                name: format(name.value),
-                text: format(text.value),
-            }),
-        })
-            .then((response) => response.json())
-            .then((data) => console.log(data))
-            .then(() => {
-                renderLikes();
-                waiting.remove();
-                name.value = "";
-                text.value = "";
-                form.style.removeProperty("display");
-            });
+        const add = () => {
+            fetch("https://wedev-api.sky.pro/api/v1/albert/comments", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: format(name.value),
+                    text: format(text.value),
+                    forceError: true,
+                }),
+            })
+                .then((response) => {
+                    status = response.status;
+                    if (response.status === 400) {
+                        throw new Error(
+                            "Имя и комментарий должны быть не короче 3 символов",
+                        );
+                    } else if (response.status === 500) {
+                        throw new Error("Сервер сломался, попробуй позже");
+                    }
+                    response.json();
+                })
+                .catch((error) => {
+                    if (status != 400 && status != 500) {
+                        alert(
+                            "Кажется, у вас сломался интернет, попробуйте позже",
+                        );
+                    } else {
+                        if (status === 500) {
+                            add();
+                        } else alert(error);
+                    }
+                })
+                .finally(() => {
+                    if (status == 201) {
+                        name.value = "";
+                        text.value = "";
+                    }
+                    if (status != 500) {
+                        status = 0;
+                        renderLikes();
+                        waiting.remove();
+                        form.style.removeProperty("display");
+                    }
+                });
+        };
+        add();
     } else {
         if (name.value === "") {
             name.classList.add("warning");
