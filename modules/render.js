@@ -1,17 +1,76 @@
-import { likes, updateLikes, tag, updateTag } from "./array.js";
-import { initLikes } from "./events.js";
-
-export const container = document.querySelector(".comments");
+import {
+    likes,
+    updateLikes,
+    tag,
+    updateTag,
+    token,
+    updateToken,
+} from "./array.js";
+import { initLikes, addEvent } from "./events.js";
+import { getLikes } from "./api.js";
+import { renderLogin } from "./renderAutorization.js";
 
 const fetchAndRenderLikes = () => {
-    return fetch("https://wedev-api.sky.pro/api/v1/albert/comments", {
-        method: "GET",
-    })
+    return getLikes()
         .then((response) => response.json())
         .then((data) => updateLikes(data.comments));
 };
 
+export function render() {
+    const app = document.querySelector(".app");
+
+    app.innerHTML = `<div class="container">
+              <ul class="comments">
+                  <p>Пожалуйста, подождите, загружаются комментарии...</з>
+              </ul>
+              <form class="add-form">
+              </form>
+          </div>`;
+    const form = document.querySelector(".add-form");
+    if (!token) {
+        form.innerHTML = `<button type="button" class="add-form-button">Чтобы добавить комментарий, авторизуйтесь</button>`;
+        let button = document.querySelector(".add-form-button");
+        button.addEventListener("click", renderLogin);
+    } else {
+        form.innerHTML = `
+          <input
+              type="text"
+              class="add-form-name"
+              id="user"
+              placeholder="Введите ваше имя"
+              value=${localStorage.getItem("user")}
+              readOnly
+          />
+          <textarea
+              type="textarea"
+              class="add-form-text"
+              id="text"
+              placeholder="Введите ваш коментарий"
+              rows="4"
+          ></textarea>
+          <div class="add-form-row">
+              <button type="button" id="submit" class="add-form-button">Написать</button>
+          </div>
+          <div class="add-form-row">
+              <button type="button" id="exit" class="add-form-button">Выход</button>
+          </div>`;
+        let submit = document.getElementById("submit");
+        submit.addEventListener("click", addEvent);
+        let exit = document.getElementById("exit");
+        exit.addEventListener("click", () => {
+            updateToken("");
+            localStorage.setItem("token", "");
+            localStorage.setItem("user", { value: "" });
+            render();
+            //let user = document.getElementById("user");
+            //user.readOnly = false;
+        });
+    }
+    renderLikes();
+}
+
 export function renderLikes() {
+    const container = document.querySelector(".comments");
     if (!tag) {
         fetchAndRenderLikes().then(() => {
             container.innerHTML = likes
