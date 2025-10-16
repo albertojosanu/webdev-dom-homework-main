@@ -1,7 +1,15 @@
-import { likes, updateTag, status, updateStatus, user, text } from "./array.js";
+import {
+    likes,
+    updateTag,
+    status,
+    updateStatus,
+    user,
+    text,
+    token,
+} from "./array.js";
 import { renderLikes } from "./render.js";
 import { render } from "./render.js";
-import { postLikes } from "./api.js";
+import { postComment } from "./api.js";
 import { updateCredentials } from "./array.js";
 
 function delay(interval = 300) {
@@ -28,7 +36,7 @@ export const addEvent = () => {
         text.classList.remove("warning");
 
         const add = () => {
-            return postLikes()
+            return postComment()
                 .then((response) => {
                     updateStatus(response.status);
                     if (response.status === 400) {
@@ -80,31 +88,33 @@ export const addEvent = () => {
 };
 
 export const initLikes = () => {
-    const comments = document.querySelectorAll(".comment");
+    if (token) {
+        const comments = document.querySelectorAll(".comment");
+        const text = document.getElementById("text");
 
-    for (const comment of comments) {
-        const button = comment.querySelector(".like-button");
+        for (const comment of comments) {
+            const button = comment.querySelector(".like-button");
 
-        comment.addEventListener("click", () => {
-            user.value = likes[comment.dataset.index].author.name;
-            text.value = "> " + likes[comment.dataset.index].text + "\n";
-            renderLikes();
-        });
-
-        button.addEventListener("click", (event) => {
-            event.stopPropagation();
-            updateTag(true);
-            button.classList.add("-loading-like");
-
-            delay(2000).then(() => {
-                likes[comment.dataset.index].isLiked
-                    ? likes[comment.dataset.index].likes--
-                    : likes[comment.dataset.index].likes++;
-                likes[comment.dataset.index].isLiked =
-                    !likes[comment.dataset.index].isLiked;
-
-                renderLikes();
+            comment.addEventListener("click", () => {
+                text.value =
+                    "> " + likes[comment.dataset.index].text + "\n" + "\n";
             });
-        });
+
+            button.addEventListener("click", (event) => {
+                event.stopPropagation();
+                updateTag(true);
+                button.classList.add("-loading-like");
+
+                delay(2000).then(() => {
+                    likes[comment.dataset.index].isLiked
+                        ? likes[comment.dataset.index].likes--
+                        : likes[comment.dataset.index].likes++;
+                    likes[comment.dataset.index].isLiked =
+                        !likes[comment.dataset.index].isLiked;
+
+                    renderLikes();
+                });
+            });
+        }
     }
 };

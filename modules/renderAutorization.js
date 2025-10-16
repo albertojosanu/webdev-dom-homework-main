@@ -1,4 +1,4 @@
-import { enterUser, getUsers } from "./api.js";
+import { enterUser } from "./api.js";
 import { render } from "./render.js";
 import { renderRegistration } from "./renderRegistration.js";
 import {
@@ -48,7 +48,6 @@ export function renderLogin() {
 
     login.addEventListener("click", () => {
         updateCredentials();
-        let login = document.getElementById("login");
         enterUser()
             .then((response) => {
                 updateStatus(response.status);
@@ -61,20 +60,10 @@ export function renderLogin() {
             .then((data) => {
                 updateToken(data.user.token);
                 localStorage.setItem("token", data.user.token);
+                localStorage.setItem("user", data.user.name);
                 render();
-                getUsers()
-                    .then((response) => {
-                        return response.json();
-                    })
-                    .then((data) => {
-                        const filteredData = data.users.filter(
-                            (element) => element.login === login.value,
-                        );
-                        localStorage.setItem("user", filteredData[0].name);
-                        let user = document.getElementById("user");
-                        user.value = filteredData[0].name;
-                        //user.readOnly = true;
-                    });
+                let user = document.getElementById("user");
+                user.value = data.user.name;
             })
             .catch((error) => {
                 alert(error);

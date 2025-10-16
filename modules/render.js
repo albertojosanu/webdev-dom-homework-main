@@ -7,11 +7,11 @@ import {
     updateToken,
 } from "./array.js";
 import { initLikes, addEvent } from "./events.js";
-import { getLikes } from "./api.js";
+import { getComments } from "./api.js";
 import { renderLogin } from "./renderAutorization.js";
 
 const fetchAndRenderLikes = () => {
-    return getLikes()
+    return getComments()
         .then((response) => response.json())
         .then((data) => updateLikes(data.comments));
 };
@@ -62,8 +62,6 @@ export function render() {
             localStorage.setItem("token", "");
             localStorage.setItem("user", { value: "" });
             render();
-            //let user = document.getElementById("user");
-            //user.readOnly = false;
         });
     }
     renderLikes();

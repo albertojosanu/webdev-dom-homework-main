@@ -10,7 +10,6 @@ export const updateTag = (newTag) => {
     tag = newTag;
 };
 
-//export let token = "";
 export let token = localStorage.getItem("token");
 
 export const updateToken = (newToken) => {
@@ -38,7 +37,6 @@ export const updateCredentials = () => {
 };
 
 export const clearCredentials = () => {
-    //user = { value: "" };
     text = { value: "" };
     login = { value: "" };
     name = { value: "" };

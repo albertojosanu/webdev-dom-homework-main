@@ -1,7 +1,7 @@
 import { format } from "./format.js";
 import { token, user, text, login, name, password } from "./array.js";
 
-export const getLikes = () => {
+export const getComments = () => {
     return fetch("https://wedev-api.sky.pro/api/v2/albert/comments", {
         method: "GET",
         headers: {
@@ -10,7 +10,7 @@ export const getLikes = () => {
     });
 };
 
-export const postLikes = () => {
+export const postComment = () => {
     return fetch("https://wedev-api.sky.pro/api/v2/albert/comments", {
         method: "POST",
         headers: {
