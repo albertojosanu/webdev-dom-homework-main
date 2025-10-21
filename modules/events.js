@@ -1,11 +1,16 @@
-import { likes, updateTag } from "./array.js";
-import { format } from "./format.js";
-import { container, renderLikes } from "./render.js";
-
-let name = document.querySelector(".add-form-name");
-let text = document.querySelector(".add-form-text");
-
-let status = 0;
+import {
+    likes,
+    updateTag,
+    status,
+    updateStatus,
+    user,
+    text,
+    token,
+} from "./array.js";
+import { renderLikes } from "./render.js";
+import { render } from "./render.js";
+import { postComment } from "./api.js";
+import { updateCredentials } from "./array.js";
 
 function delay(interval = 300) {
     return new Promise((resolve) => {
@@ -16,29 +21,24 @@ function delay(interval = 300) {
 }
 
 export const addEvent = () => {
-    if (name.value !== "" && text.value !== "") {
+    updateCredentials();
+    if (user.value !== "" && text.value !== "") {
         const form = document.querySelector(".add-form");
         form.style.display = "none";
 
+        const container = document.querySelector(".comments");
         let waiting = document.createElement("p");
         waiting.textContent = "Комментарий добавляется...";
         waiting.style.textAlign = "center";
         container.append(waiting);
 
-        name.classList.remove("warning");
+        user.classList.remove("warning");
         text.classList.remove("warning");
 
         const add = () => {
-            fetch("https://wedev-api.sky.pro/api/v1/albert/comments", {
-                method: "POST",
-                body: JSON.stringify({
-                    name: format(name.value),
-                    text: format(text.value),
-                    forceError: true,
-                }),
-            })
+            return postComment()
                 .then((response) => {
-                    status = response.status;
+                    updateStatus(response.status);
                     if (response.status === 400) {
                         throw new Error(
                             "Имя и комментарий должны быть не короче 3 символов",
@@ -46,10 +46,10 @@ export const addEvent = () => {
                     } else if (response.status === 500) {
                         throw new Error("Сервер сломался, попробуй позже");
                     }
-                    response.json();
+                    return response.json();
                 })
                 .catch((error) => {
-                    if (status != 400 && status != 500) {
+                    if (status !== 400 && status !== 500) {
                         alert(
                             "Кажется, у вас сломался интернет, попробуйте позже",
                         );
@@ -60,24 +60,24 @@ export const addEvent = () => {
                     }
                 })
                 .finally(() => {
-                    if (status == 201) {
-                        name.value = "";
+                    if (status === 201) {
+                        user.value = "";
                         text.value = "";
                     }
-                    if (status != 500) {
-                        status = 0;
-                        renderLikes();
+                    if (status !== 500) {
+                        updateStatus(0);
+                        render();
                         waiting.remove();
-                        form.style.removeProperty("display");
+                        form.style.display = "flex";
                     }
                 });
         };
         add();
     } else {
-        if (name.value === "") {
-            name.classList.add("warning");
+        if (user.value === "") {
+            user.classList.add("warning");
         } else {
-            name.classList.remove("warning");
+            user.classList.remove("warning");
         }
         if (text.value === "") {
             text.classList.add("warning");
@@ -88,31 +88,33 @@ export const addEvent = () => {
 };
 
 export const initLikes = () => {
-    const comments = document.querySelectorAll(".comment");
+    if (token) {
+        const comments = document.querySelectorAll(".comment");
+        const text = document.getElementById("text");
 
-    for (const comment of comments) {
-        const button = comment.querySelector(".like-button");
+        for (const comment of comments) {
+            const button = comment.querySelector(".like-button");
 
-        comment.addEventListener("click", () => {
-            name.value = likes[comment.dataset.index].author.name;
-            text.value = "> " + likes[comment.dataset.index].text + "\n";
-            renderLikes();
-        });
-
-        button.addEventListener("click", (event) => {
-            event.stopPropagation();
-            updateTag(true);
-            button.classList.add("-loading-like");
-
-            delay(2000).then(() => {
-                likes[comment.dataset.index].isLiked
-                    ? likes[comment.dataset.index].likes--
-                    : likes[comment.dataset.index].likes++;
-                likes[comment.dataset.index].isLiked =
-                    !likes[comment.dataset.index].isLiked;
-
-                renderLikes();
+            comment.addEventListener("click", () => {
+                text.value =
+                    "> " + likes[comment.dataset.index].text + "\n" + "\n";
             });
-        });
+
+            button.addEventListener("click", (event) => {
+                event.stopPropagation();
+                updateTag(true);
+                button.classList.add("-loading-like");
+
+                delay(2000).then(() => {
+                    likes[comment.dataset.index].isLiked
+                        ? likes[comment.dataset.index].likes--
+                        : likes[comment.dataset.index].likes++;
+                    likes[comment.dataset.index].isLiked =
+                        !likes[comment.dataset.index].isLiked;
+
+                    renderLikes();
+                });
+            });
+        }
     }
 };
