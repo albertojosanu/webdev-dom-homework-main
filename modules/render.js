@@ -10,6 +10,8 @@ import { initLikes, addEvent } from "./events.js";
 import { getComments } from "./api.js";
 import { renderLogin } from "./renderAutorization.js";
 
+let start = false;
+
 const fetchAndRenderLikes = () => {
     return getComments()
         .then((response) => response.json())
@@ -18,14 +20,15 @@ const fetchAndRenderLikes = () => {
 
 export function render() {
     const app = document.querySelector(".app");
-
-    app.innerHTML = `<div class="container">
-              <ul class="comments">
-                  <p>Пожалуйста, подождите, загружаются комментарии...</з>
-              </ul>
-              <form class="add-form">
-              </form>
-          </div>`;
+    if (start) {
+        app.innerHTML = `<div class="container">
+                <ul class="comments">
+                </ul>
+                <form class="add-form">
+                </form>
+            </div>`;
+    }
+    start = true;
     const form = document.querySelector(".add-form");
     if (!token) {
         form.innerHTML = `<button type="button" class="add-form-button">Чтобы добавить комментарий, авторизуйтесь</button>`;
